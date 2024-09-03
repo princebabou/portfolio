@@ -35,7 +35,7 @@
 }
 
 @media (max-width: 640px) {
-  .w-1/2 {
+  .w-1\2 {
     width: 100%;
   }
 
@@ -57,7 +57,7 @@
   }
 }
 @media (max-width: 500px) {
-  .w-1/2 {
+  .w-1\2 {
     width: 100%;
   }
 
