@@ -105,7 +105,7 @@ const Hero = () => {
             </span>
           </div>
           <h1 className="text-white text-4xl lg:text-6xl font-bold mb-4">
-            I'm Babou
+            I&apos;m Babou
           </h1>
           <div className="text-blue-500 text-2xl lg:text-4xl mb-4 h-16">
             I am into {typedText}
@@ -181,12 +181,12 @@ const About = () => (
           </h3>
           <p className="text-blue-500 mb-2">Full Stack Developer</p>
           <p className="text-gray-300 text-lg mb-4">
-            I'm a full-stack web developer with a passion for building
-            beautiful, functional, and scalable web applications. I'm currently
+            I&apos;m a full-stack web developer with a passion for building
+            beautiful, functional, and scalable web applications. I&apos;m currently
             a student at Rwanda Coding Academy learning software development &
-            Embedded Systems. I'm also a self-taught developer with a keen
-            interest in learning new technologies and frameworks. I'm familiar
-            with different languages & frameworks and I'm looking forward to
+            Embedded Systems. I&apos;m also a programmer with a keen
+            interest in learning new technologies and frameworks. I&apos;m familiar
+            with different languages & frameworks and I&apos;m looking forward to
             learning more about them and other technologies.
           </p>
           <div className="flex items-center">
@@ -363,9 +363,9 @@ const Services = () => {
           Services
         </h2>
         <p className="text-center text-gray-300 mb-12">
-          Since I entered this field, I've honed my skills in problem-solving
+          Since I entered this field, I&apos;ve honed my skills in problem-solving
           and adapting to various tech stacks. Here are the key services I
-          offer:
+          offer
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
           {services.map((service, index) => (
@@ -623,7 +623,7 @@ const Testimonials = () => {
       <div className="container mx-auto text-center">
         <h2 className="text-white text-3xl font-bold mb-8">Testimonials</h2>
         <p className="text-gray-400 mb-12">
-          Below are the testimonials that I got from different clients that I've
+          Below are the testimonials that I got from different clients that I&apos;ve
           worked with.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -635,7 +635,7 @@ const Testimonials = () => {
               <div className="text-blue-500 text-4xl mb-4">
                 <i className="bi bi-quote"></i>
               </div>
-              <p className="text-gray-200 mb-6 italic">"{testimonial.text}"</p>
+              <p className="text-gray-200 mb-6 italic">{testimonial.text}</p>
               <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full overflow-hidden shadow-lg">
                 <img
                   src={testimonial.image}
