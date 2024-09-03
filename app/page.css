@@ -35,7 +35,7 @@
 }
 
 @media (max-width: 640px) {
-  .w-1/\2 { /* Corrected */
+  .w-1\/2 { /* Corrected */
     width: 100%;
   }
 
@@ -58,7 +58,7 @@
 }
 
 @media (max-width: 500px) {
-  .w-1/\2 { /* Corrected */
+  .w-1\/2 { /* Corrected */
     width: 100%;
   }
 
