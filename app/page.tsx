@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -52,7 +51,7 @@ const Navbar = () => {
     </nav>
   );
 };
-// Hero section with 3D effect
+// Hero section 
 const Hero = () => {
   const [typedText, setTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -127,7 +126,6 @@ const Hero = () => {
               alt="Babou"
               className="absolute top-0 left-0 w-full h-full object-cover rounded-full border-4 border-blue-500 shadow-2xl"
             />
-            {/* Floating Icons */}
             <FaReact
               className="absolute text-blue-400 w-8 h-8 lg:w-12 lg:h-12 animate-spin-slow"
               style={{ top: "-10%", left: "50%" }}
@@ -173,8 +171,6 @@ const About = () => (
             />
           </div>
         </div>
-
-        {/* About Text */}
         <div className="w-full md:w-2/3 md:pl-12">
           <h3 className="text-white text-2xl font-semibold mb-4">
             Manzi Prince Babou
@@ -205,7 +201,7 @@ const About = () => (
 
 type TabType = "frontend" | "backend" | "databases" | "others" | "mobile";
 
-// Skills section with animations
+// Skills section 
 const Skills = () => {
   const [activeTab, setActiveTab] = useState<TabType>("frontend");
 
@@ -531,7 +527,7 @@ const CVRoadmap = () => {
   );
 };
 
-// Projects section with 3D effect
+// Projects section 
 const Projects = () => {
   const projects = [
     {
@@ -602,19 +598,19 @@ const Testimonials = () => {
       name: "John Doe",
       text: "Babou is an exceptional developer. Their work exceeded our expectations!",
       role: "CEO, Tech Corp",
-      image: "/images/one.jpg", // Add the image path here
+      image: "/images/one.jpg", 
     },
     {
       name: "Jane Smith",
       text: "Working with Babou was a pleasure. They delivered high-quality work on time.",
       role: "Project Manager, Design Studio",
-      image: "/images/two.jpg", // Add the image path here
+      image: "/images/two.jpg", 
     },
     {
       name: "Alex Johnson",
       text: "Babou's attention to detail and problem-solving skills are unmatched.",
       role: "CTO, Startup Inc.",
-      image: "/images/three.jpg", // Add the image path here
+      image: "/images/three.jpg",
     },
   ];
 
@@ -653,7 +649,7 @@ const Testimonials = () => {
   );
 };
 
-// Contact section with visible map
+// Contact section with map
 const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -672,14 +668,14 @@ const Contact = () => {
     };
 
     emailjs.send(
-      'service_72p0uwq', // Replace with your service ID
-      'template_7315bje', // Replace with your template ID
+      'service_72p0uwq', 
+      'template_7315bje', 
       templateParams,
-      'cXcKdm2srY9_qxGvs'      // Replace with your user ID
+      'cXcKdm2srY9_qxGvs'    
     )
     .then((response) => {
       console.log('Email sent successfully:', response.status, response.text);
-      setIsMessageSent(true); // Show the pop-up
+      setIsMessageSent(true); 
       setTimeout(() => setIsMessageSent(false), 3000);
     })
     .catch((err) => {
@@ -702,7 +698,6 @@ const Contact = () => {
           .
         </p>
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Contact Information */}
           <div className="w-full lg:w-1/2 bg-gray-900 p-6 rounded-lg shadow-lg">
             <div className="mb-4">
               <div className="flex items-center mb-2">
@@ -737,7 +732,6 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* Contact Form */}
           <div className="w-full lg:w-1/2 bg-gray-900 p-6 rounded-lg shadow-lg">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex space-x-4">
