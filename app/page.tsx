@@ -40,7 +40,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''} px-3`}>
       <Navbar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
       <Hero isDarkMode={isDarkMode} />
       <About isDarkMode={isDarkMode} />
