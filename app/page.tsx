@@ -8,6 +8,7 @@ import Services from "./components/Services";
 import Skills from "./components/Skills";
 import CVRoadmap from "./components/CVRoadmap";
 import Projects from "./components/Projects";
+import Blog from "./components/Blog";
 import Contact from "./components/Contact";
 import Testimonials from "./components/Testimonials";
 import Footer from "./components/Footer";
@@ -48,6 +49,7 @@ export default function Home() {
       <Skills isDarkMode={isDarkMode} />
       <CVRoadmap isDarkMode={isDarkMode} />
       <Projects isDarkMode={isDarkMode}/>
+      <Blog isDarkMode={isDarkMode}/>
       <Testimonials isDarkMode={isDarkMode}/>
       <Contact isDarkMode={isDarkMode}/>
       <Footer isDarkMode={isDarkMode}/>

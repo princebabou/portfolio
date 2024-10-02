@@ -46,7 +46,7 @@ export default function EducationalJourney({ isDarkMode }: EducationalJourneyPro
   }
 
   return (
-    <section id="education" className={`py-20 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+    <section id="educational-journey" className={`py-20 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <div className="container mx-auto px-4">
         <motion.h2 
           className={`text-3xl font-bold mb-8 text-center ${isDarkMode ? 'text-white' : 'text-gray-800'}`}

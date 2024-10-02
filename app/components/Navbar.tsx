@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, X, Menu, User, Briefcase, Code, Award, Moon, Sun, Home } from "lucide-react"
+import { Mail, Quote, CheckCircle , X, Menu, User, Briefcase, Code, GraduationCap, Moon, Sun, Home, BookOpen, CheckCircleIcon } from "lucide-react"
 
 interface NavbarProps {
   isDarkMode: boolean
@@ -13,8 +13,11 @@ const navItems = [
   { name: 'Home', icon: Home },
   { name: 'About', icon: User },
   { name: 'Services', icon: Briefcase },
+  { name: 'Skills', icon: CheckCircle },
+  { name: 'Educational Journey', icon: GraduationCap },
   { name: 'Projects', icon: Code },
-  { name: 'Experience', icon: Award },
+  { name: 'Blog', icon: BookOpen },
+  { name: 'Testimonials', icon: Quote },
   { name: 'Contact', icon: Mail },
 ]
 
@@ -24,7 +27,7 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navItems.map(item => item.name.toLowerCase())
+      const sections = navItems.map(item => item.name.toLowerCase().replace(' ', '-'))
       const currentSection = sections.find(section => {
         const element = document.getElementById(section)
         if (element) {
@@ -64,9 +67,9 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
               {navItems.map((item) => (
                 <motion.li key={item.name} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                   <a
-                    href={`#${item.name.toLowerCase()}`}
+                    href={`#${item.name.toLowerCase().replace(' ', '-')}`}
                     className={`flex items-center space-x-1 px-4 py-2 rounded-full text-sm ${
-                      activeSection === item.name.toLowerCase()
+                      activeSection === item.name.toLowerCase().replace(' ', '-')
                         ? isDarkMode
                           ? 'bg-gray-700 text-white'
                           : 'bg-gray-200 text-gray-800'
@@ -115,9 +118,9 @@ export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
               {navItems.map((item) => (
                 <motion.li key={item.name} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <a
-                    href={`#${item.name.toLowerCase()}`}
+                    href={`#${item.name.toLowerCase().replace(' ', '-')}`}
                     className={`flex items-center space-x-2 p-2 rounded-md ${
-                      activeSection === item.name.toLowerCase()
+                      activeSection === item.name.toLowerCase().replace(' ', '-')
                         ? isDarkMode
                           ? 'bg-gray-700 text-white'
                           : 'bg-gray-200 text-gray-800'
