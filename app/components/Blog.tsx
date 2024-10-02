@@ -48,7 +48,7 @@ export default function Blog({ isDarkMode }: BlogProps) {
         >
           <div className="p-12">
             <motion.h2 
-              className={`text-5xl font-bold text-center flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-8`}
+              className={`text-3xl font-bold text-center flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-8`}
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
