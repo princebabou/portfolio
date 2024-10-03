@@ -12,14 +12,14 @@ const projects = [
     description: "Identify Plants using AI",
     link: "https://plantiify.vercel.app/",
     image: "/images/plantify.png",
-    github: "https://github.com/princebabou/plantiify",
+    github: "https://github.com/princebabou/Plantify",
   },
   {
     name: "Wishcraft",
     description: "One click to wish your beloved happy birthdays",
     link: "https://wishcraft-omega.vercel.app",
     image: "/images/wishcraft.png",
-    github: "https://github.com/princebabou/wishcraft",
+    github: "https://github.com/princebabou/wishCraft",
   },
   {
     name: "Steganography tool",
@@ -33,7 +33,7 @@ const projects = [
     description: "Keep track of trending movies and TV series",
     link: "https://nutflixx.vercel.app/",
     image: "/images/nutflix.png",
-    github: "https://github.com/princebabou/nutflix",
+    github: "https://github.com/princebabou/Nutflix",
   },
 ];
 
