@@ -17,7 +17,7 @@ const projects = [
   {
     name: "Wishcraft",
     description: "One click to wish your beloved happy birthdays",
-    link: "#",
+    link: "https://wishcraft-omega.vercel.app",
     image: "/images/wishcraft.png",
     github: "https://github.com/yourusername/wishcraft",
   },
