@@ -11,7 +11,7 @@ const projects = [
     name: "Plantiify",
     description: "Identify Plants using AI",
     link: "https://plantiify.vercel.app/",
-    image: "/images/plantify.png",
+    image: "/images/plantiify.png",
     github: "https://github.com/princebabou/Plantify",
   },
   {
