@@ -15,11 +15,11 @@ const projects = [
     github: "https://github.com/princebabou/Plantify",
   },
   {
-    name: "Wishcraft",
-    description: "One click to wish your beloved happy birthdays",
-    link: "https://wishcraft-omega.vercel.app",
-    image: "/images/wishcraft.png",
-    github: "https://github.com/princebabou/wishCraft",
+    name: "Scribber",
+    description: "Transcribe fast and accurately",
+    link: "https://scribber.vercel.app",
+    image: "/images/scribber.png",
+    github: "https://github.com/princebabou/scriber",
   },
   {
     name: "Steganography tool",
