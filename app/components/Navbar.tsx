@@ -10,15 +10,11 @@ interface NavbarProps {
 }
 
 const navItems = [
-  { name: '', icon: Home },
-  { name: '', icon: User },
-  { name: '', icon: Briefcase },
-  { name: '', icon: CheckCircle },
-  { name: '', icon: GraduationCap },
-  { name: '', icon: Code },
-  { name: '', icon: BookOpen },
-  { name: '', icon: Quote },
-  { name: '', icon: Mail },
+  { name: 'Home', icon: Home },
+  { name: 'Skills', icon: CheckCircle },
+  { name: 'Projects', icon: Code },
+  { name: 'Blog', icon: BookOpen },
+  { name: 'Contact', icon: Mail },
 ]
 
 export default function Navbar({ isDarkMode, toggleDarkMode }: NavbarProps) {
