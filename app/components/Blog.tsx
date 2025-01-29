@@ -54,7 +54,7 @@ export default function Blog({ isDarkMode }: BlogProps) {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Code className="mr-3 text-blue-500" size={32} />
-              Insights on Cybersecurity & Software Engineering
+              Blog
             </motion.h2>
             <motion.p 
               className={`text-center text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-8`}
@@ -87,6 +87,13 @@ export default function Blog({ isDarkMode }: BlogProps) {
                 color={isDarkMode ? 'text-purple-300' : 'text-purple-600'}
                 isDarkMode={isDarkMode}
               />
+              <BlogCard
+                icon={Rocket}
+                title="Career Growth"
+                description="Learn how to advance your career in tech with tips on certifications, interviews, and professional development."
+                color={isDarkMode ? 'text-orange-300' : 'text-orange-600'}
+                isDarkMode={isDarkMode}
+              /> 
             </div>
 
             <div className="flex justify-center">
