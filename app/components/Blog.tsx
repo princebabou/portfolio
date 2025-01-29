@@ -125,7 +125,7 @@ export default function Blog({ isDarkMode }: BlogProps) {
 
             <div className="flex justify-center items-center space-x-6">
               <MotionLink
-                href="https://skirr.vercel.app"
+                href="https://quillblog.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${
