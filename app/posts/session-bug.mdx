@@ -16,7 +16,7 @@ My first step was understanding how the application handled authentication. Usin
 
 ```http
 POST /login HTTP/1.1
-Host: example-app.local
+Host: redacted.com
 Content-Type: application/json
 
 {
@@ -47,7 +47,7 @@ import requests
 
 cookies = {"SESSIONID": "<captured-session>"}
 
-r = requests.get("https://example-app.local/account", cookies=cookies)
+r = requests.get("https://redacted.com/account", cookies=cookies)
 print(r.status_code)
 ```
 
