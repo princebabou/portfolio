@@ -1,58 +1,88 @@
-"use client"
-
-import { useState } from "react";
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import About from './components/About';
-import Services from "./components/Services";
-import Skills from "./components/Skills";
-import CVRoadmap from "./components/CVRoadmap";
-import Projects from "./components/Projects";
-import Blog from "./components/Blog";
-import Contact from "./components/Contact";
-import Testimonials from "./components/Testimonials";
+import Nav from "./components/Nav";
 import Footer from "./components/Footer";
-import { useEffect } from "react";
+import { profile, contact } from "./lib/content";
+
+// Two-column numbered row: mono label on the left, content on the right.
+function Row({
+  no,
+  label,
+  id,
+  children,
+}: {
+  no: string;
+  label: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6 md:gap-10 border-t border-line py-16 scroll-mt-20"
+    >
+      <div className="font-mono text-xs uppercase tracking-[0.12em]">
+        <span className="text-accent">{no}</span>
+        <span className="text-sub ml-3">{label}</span>
+      </div>
+      <div>{children}</div>
+    </section>
+  );
+}
 
 export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  useEffect(() => {
-    const animateOnScroll = () => {
-      const elements = document.querySelectorAll(".animate-on-scroll");
-      elements.forEach((element) => {
-        const elementTop = element.getBoundingClientRect().top;
-        const elementBottom = element.getBoundingClientRect().bottom;
-        if (elementTop < window.innerHeight && elementBottom > 0) {
-          element.classList.add("animate-fadeInUp");
-        }
-      });
-    };
-
-    window.addEventListener("scroll", animateOnScroll);
-    animateOnScroll();
-
-    return () => window.removeEventListener("scroll", animateOnScroll);
-  }, []);
-
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''} px-3`}>
-      <Navbar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-      <Hero isDarkMode={isDarkMode} />
-      <About isDarkMode={isDarkMode} />
-      <Services isDarkMode={isDarkMode} />
-      <Skills isDarkMode={isDarkMode} />
-      <CVRoadmap isDarkMode={isDarkMode} />
-      <Projects isDarkMode={isDarkMode}/>
-      <Blog isDarkMode={isDarkMode}/>
-      <Testimonials isDarkMode={isDarkMode}/>
-      <Contact isDarkMode={isDarkMode}/>
-      <Footer isDarkMode={isDarkMode}/>
-    </div>
+    <main className="reveal">
+      <Nav />
+
+      <div className="max-w-content mx-auto px-6">
+        {/* hero */}
+        <header className="pt-20 pb-24">
+          <h1 className="font-serif text-5xl sm:text-6xl tracking-tight leading-[1.02] mb-8">
+            {profile.name}.
+          </h1>
+          <p className="text-2xl sm:text-3xl leading-snug max-w-[34ch]">
+            {profile.tagline}
+          </p>
+          <p className="mt-8 font-mono text-sm text-sub">
+            {profile.role} — {profile.location}
+          </p>
+        </header>
+
+        {/* about */}
+        <Row no="01" label="about">
+          <div className="space-y-5 text-lg leading-relaxed max-w-[58ch]">
+            {profile.about.map((p, i) => (
+              <p key={i} className={i === 0 ? "text-ink" : "text-sub"}>
+                {p}
+              </p>
+            ))}
+          </div>
+        </Row>
+
+        {/* contact */}
+        <Row no="02" label="contact" id="contact">
+          <a
+            href={`mailto:${contact.email}`}
+            className="font-serif text-3xl sm:text-4xl tracking-tight hover:text-accent transition-colors inline-block mb-8"
+          >
+            {contact.email}
+          </a>
+          <div className="flex gap-6 font-mono text-sm">
+            {contact.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sub hover:text-ink transition-colors"
+              >
+                {l.label} ↗
+              </a>
+            ))}
+          </div>
+        </Row>
+      </div>
+
+      <Footer />
+    </main>
   );
 }

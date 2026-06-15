@@ -1,0 +1,268 @@
+---
+title: "Is Your API Secure? Top 5 Vulnerabilities Developers Miss"
+summary: "Explore critical API security risks from OWASP Top 10 and learn how to protect your systems."
+author: "Babou"
+date: "2025-02-06"
+tags: [api-security, owasp, web-development, cybersecurity]
+image: "/images/API-Security/thumbnail.jpg"
+---
+
+# Is Your API Secure? Top 5 Vulnerabilities Developers Miss
+
+![API Security Shield](/images/API-Security/api-shield.png)
+**Common API attack vectors**
+
+Modern APIs are the backbone of digital services, but they're also prime targets for attackers. Let's examine the top 5 API vulnerabilities from OWASP's Top 10 list that developers often overlook.
+
+## 1. Broken Object Level Authorization (BOLA)
+**BOLA (Broken Object Level Authorization)** is a common API security vulnerability where an attacker can manipulate object identifiers (like user IDs) to gain unauthorized access to other users' data. It is one of the most critical security risks in modern web applications and APIs, often listed in the OWASP API Security Top 10 (ranked #1 in 2019 and 2023).
+
+
+### Example Attack:
+Let's say a banking API provides an endpoint:
+```bash
+GET accounts/12345/financial_info
+```
+
+A legitimate user with account ID 12345 can retrieve their account details. However, if the API does not enforce proper authorization, an attacker can change the ID to another user's account:
+
+```bash
+GET accounts/67890/financial_info
+```
+If the API does not verify that the requesting user actually owns account 67890, the attacker can access someone else’s sensitive information.
+
+![BOLA Exploitation Diagram](/images/API-Security/bola-diagram.png)
+
+**Prevention:**
+- Implement resource-level access checks
+- Use UUIDs instead of sequential IDs
+- Validate ownership in backend logic
+- Perform Security Testing (Pentesting, API Scanners)
+---
+
+## 2. Injection Attacks
+
+Injection attacks occur when an attacker sends **malicious input** into an API, which is then improperly executed, leading to **data leaks, unauthorized access, or system compromise**. These attacks exploit **weak input validation and unsafe data handling**.
+
+### Common Injection Attacks:
+- **SQL Injection (SQLi)** – Injects SQL queries to manipulate databases.
+- **NoSQL Injection** – Exploits weak query filtering in NoSQL databases.
+- **Command Injection** – Executes arbitrary system commands via API inputs.
+- **LDAP Injection** – Alters LDAP queries to bypass authentication.
+- **XML Injection** – Manipulates XML payloads to exploit API parsers.
+
+---
+
+### SQL Injection
+**Vulnerable Code:**
+```javascript
+app.get('/users', (req, res) => {
+  db.query(`SELECT * FROM users WHERE name = '${req.query.name}'`);
+});
+```
+If a user inputs:
+
+```bash
+' OR '1'='1
+```
+It could return all users in the database.
+
+**Secure Fix (Using Prepared Statements):**
+
+```javascript
+app.get('/users', (req, res) => {
+  db.query('SELECT * FROM users WHERE name = ?', [req.query.name]);
+});
+```
+
+### NoSQL Injection
+Vulnerable Code:
+
+```javascript
+app.get('/users', (req, res) => {
+  db.users.find({ "username": req.query.username });
+});
+```
+```json
+{ "username": { "$ne": null } }
+```
+This might return all users in the database.
+
+**Secure Fix (Input Validation):**
+
+```javascript
+const sanitize = require('mongo-sanitize');
+app.get('/users', (req, res) => {
+  db.users.find({ "username": sanitize(req.query.username) });
+});
+```
+### Command Injection
+**Vulnerable Code:**
+
+```javascript
+const { exec } = require('child_process');
+app.get('/ping', (req, res) => {
+  exec(`ping ${req.query.host}`, (err, stdout) => res.send(stdout));
+});
+```
+If a user enters:
+
+```bash
+example.com && rm -rf /
+```
+It could execute system commands!
+
+**Secure Fix (Avoid Direct Execution):**
+
+```javascript
+const { execFile } = require('child_process');
+app.get('/ping', (req, res) => {
+  execFile('ping', [req.query.host], (err, stdout) => res.send(stdout));
+});
+```
+
+### LDAP Injection
+**Vulnerable Code:**
+
+```javascript
+app.get('/login', (req, res) => {
+  const query = `(uid=${req.query.username})`;
+  ldapClient.search(query);
+});
+```
+If a user inputs:
+
+```markdown
+*)(password=*)
+```
+It could authenticate anyone!
+
+**Secure Fix (Use Parameterized Queries):**
+
+```javascript
+const query = '(uid=?);';
+ldapClient.search(query, [req.query.username]);
+```
+
+## 3. Security Misconfigurations
+
+Security misconfigurations are **one of the most common vulnerabilities** in APIs. They occur when APIs or their environments are not securely set up, leaving sensitive data exposed or allowing unauthorized access. 
+
+Common pitfalls include:
+- **Unnecessary HTTP methods enabled** – APIs often leave HTTP methods like **PUT, DELETE** accessible without proper authorization, potentially allowing attackers to modify or delete resources.
+- **Improper CORS configurations** – If CORS (Cross-Origin Resource Sharing) headers are not properly configured, it can allow malicious sites to make unauthorized API requests.
+- **Exposed debug endpoints** – Debug or development endpoints, like **Swagger UI** or **Postman collections**, often contain sensitive information or expose the backend to attacks when left active in production environments.
+
+![Misconfiguration Example](/images/API-Security/security-misconfig.png)  
+*Exposed Swagger UI with production credentials*
+
+---
+
+### **Impact of Security Misconfigurations:**
+1. **Data Exposure** – Misconfigured CORS or debug endpoints can expose sensitive data like **API keys, credentials, or database information**.
+2. **Unauthorized Access** – Improper access controls or HTTP methods can allow attackers to bypass authorization and gain access to **restricted resources**.
+3. **System Compromise** – Exposing debug tools can give attackers valuable insights into the internal workings of the application, leading to **exploits** and **attacks**.
+
+---
+
+### **Best Practices to Avoid Security Misconfigurations:**
+-**Limit HTTP Methods:** Only enable HTTP methods required for your application. Disable methods like **PUT** and **DELETE** if they aren’t necessary.  
+-**Proper CORS Configuration:** Use **allow-lists** to specify trusted domains and restrict access from **untrusted origins**.  
+-**Disable Debug Endpoints in Production:** Ensure **Swagger UI**, **Postman collections**, or any debugging tools are **disabled** in production.  
+-**Use Security Headers:**  Implement security-related HTTP headers like **Strict-Transport-Security (HSTS)**, **Content Security Policy (CSP)**, and **X-Content-Type-Options** to secure your API.
+-**Automated Security Scanning:** Use tools like **OWASP ZAP** or **Burp Suite** to automate the detection of misconfigurations and other security issues.
+
+By ensuring your API is **properly configured**, you can minimize the attack surface and protect against common vulnerabilities. 🚀
+
+
+## 4. Excessive Data Exposure
+
+Excessive data exposure occurs when APIs return **full data objects** without filtering, leading to unintended **information leaks**.
+
+### **Bad Practice:**
+```json
+{
+  "user": {
+    "email": "user@example.com",
+    "password_hash": "...",
+    "ssn": "123-45-6789"
+  }
+}
+```
+Sensitive information, such as passwords and social security numbers, should never be included in API responses.
+
+**Secure Approach:**
+```json
+{
+  "user": {
+    "email": "user@example.com",
+    "public_id": "u-12345"
+  }
+}
+```
+In this example, the **password_hash** and **ssn** are removed, reducing the risk
+Only return necessary data and avoid exposing sensitive information like passwords, SSNs, or personal identifiers.
+
+
+
+## 5. Broken Authentication
+
+Broken authentication vulnerabilities occur when APIs fail to properly authenticate or validate users, leading to **unauthorized access**. Common issues include:
+
+- **Weak JWT validation** – Not verifying the authenticity of JWT tokens.
+- **Missing token expiration** – Tokens that do not expire, allowing indefinite access.
+- **Insecure key storage** – Storing keys or secrets in unsafe locations.
+
+### **Dangerous Practice:**
+```python
+# Dangerous practice
+jwt.decode(token, verify=False)
+```
+This practice skips token validation, leaving the application vulnerable to token tampering.
+
+**Secure Approach:**
+Always validate JWT tokens with a secret key.
+Use token expiration and refresh tokens for better session management.
+Store secrets securely (e.g., environment variables or secret management tools).
+![Auth Flow Diagram](/images/API-Security/auth-flow.png)
+*Secure token validation process*
+
+---
+
+## API Security Best Practices
+
+To safeguard your API, follow these essential security best practices:
+
+ -**Implement Rate Limiting:** Limit the number of requests a user can make to your API in a given time period to prevent **abuse** and **denial-of-service (DoS)** attacks.
+
+ -**Use Strict Schema Validation:** Validate **all incoming data** against a predefined schema to avoid **malicious inputs** that could lead to vulnerabilities like injection attacks.
+
+ -**Encrypt Sensitive Data in Transit and at Rest:** Always encrypt sensitive information using **TLS** (for data in transit) and secure storage mechanisms (for data at rest) to protect against **data breaches**.
+
+ -**Regularly Audit API Endpoints:** Conduct regular **security audits** and penetration tests on API endpoints to identify vulnerabilities and ensure they are secure.
+
+
+
+
+```yaml
+# Example rate limiting configuration
+rate_limit:
+  enabled: true
+  requests: 100
+  window: 60 # seconds
+  headers: true
+```
+
+---
+
+> **Critical Note:** Always test APIs with tools like [OWASP ZAP](https://www.zaproxy.org/) and [Postman](https://www.postman.com/security-testing/) before production deployment.
+
+## Recommended Resources
+1. [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
+2. [API Security Checklist](https://github.com/shieldfy/API-Security-Checklist)
+3. [JWT Best Practices Guide](https://auth0.com/docs/secure/tokens/json-web-tokens)
+
+## Conclusion
+API security requires continuous vigilance. By addressing these top vulnerabilities and implementing robust security controls, developers can create APIs that are both functional and secure.
+
+### Thanks For Reading 💝

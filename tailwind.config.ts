@@ -8,20 +8,24 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        paper: "#f7f5f0",
+        ink: "#16150f",
+        sub: "#6b675c",
+        accent: "#a8741a",
+        line: "#e3ddd0",
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "ui-serif", "Georgia", "serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
+      maxWidth: {
+        content: "760px",
       },
     },
   },
 
-  purge: {
-    options: {
-      safelist: ['w-1\/2'],
-    },
-  },
-  
   plugins: [],
 };
 export default config;
