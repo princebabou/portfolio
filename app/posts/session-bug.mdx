@@ -1,0 +1,136 @@
+---
+title: "Chasing a Session Bug That Turned Into Two Findings"
+summary: "A logout that didn't really log out — and the authorization flaw I only found because I kept pulling on the thread."
+author: "Babou"
+date: "2026-06-10"
+tags: [appsec, authentication, session-management, authorization, pentesting]
+---
+
+One of the things I enjoy most about application security is that the first vulnerability is rarely the whole story.
+
+Most assessments start with a single observation — something that feels slightly off. A response doesn't behave the way you expect, or a token survives longer than it should. Usually that observation leads nowhere. Occasionally it opens a door. This was one of those cases.
+
+## Mapping the authentication flow
+
+My first step was understanding how the application handled authentication. Using Burp Suite, I captured the login request and response.
+
+```http
+POST /login HTTP/1.1
+Host: example-app.local
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "********"
+}
+```
+
+The server replied with a session cookie:
+
+```http
+HTTP/1.1 200 OK
+Set-Cookie: SESSIONID=7f8d9a2c...; HttpOnly; Secure
+```
+
+At first glance everything looked fine: the cookie was marked `Secure` and `HttpOnly`, authentication worked as expected, and protected resources correctly required a valid session. Nothing stood out — so I moved on to the session lifecycle.
+
+### Testing session validation
+
+Whenever I assess authentication, I try to answer one simple question: what happens to a session after the application believes it should no longer be valid?
+
+To find out, I worked through the usual scenarios — logging in, accessing protected resources, logging out, replaying previously issued tokens, opening concurrent sessions, and changing authentication state. The aim was to see whether session identifiers were properly invalidated and regenerated across the whole workflow.
+
+A quick verification script was enough to check:
+
+```python
+import requests
+
+cookies = {"SESSIONID": "<captured-session>"}
+
+r = requests.get("https://example-app.local/account", cookies=cookies)
+print(r.status_code)
+```
+
+This wasn't about exploitation — it was validation. If the application had invalidated the session correctly, access should have been denied.
+
+### The unexpected result
+
+After logging out, I replayed a previously captured token:
+
+```http
+GET /account HTTP/1.1
+Cookie: SESSIONID=<previous-session>
+```
+
+I expected a `401 Unauthorized`. Instead, the application kept returning authenticated content.
+
+That raised a handful of questions at once. Was logout only happening on the client side? Was invalidation simply delayed? Were multiple systems managing session state? Was stale session data being trusted somewhere in the stack?
+
+I had a finding — but no explanation. And without understanding the root cause, it's easy to miss everything related to it.
+
+## Expanding the assessment
+
+So instead of fixating on the single request, I mapped the entire authentication process and documented the state transitions:
+
+```text
+User Login
+    |
+    v
+Session Issued
+    |
+    v
+Protected Resource Access
+    |
+    v
+Logout Event
+    |
+    v
+Session Validation
+```
+
+Then I tested every transition between those states. A lot of vulnerabilities don't live inside a single request; they emerge in the gaps between states that developers assume will stay synchronized.
+
+After more testing, the picture was clear: the application wasn't consistently invalidating server-side session records after logout. Under specific conditions, previously issued session identifiers stayed usable longer than intended. That was a solid, reportable finding.
+
+Most testers would have stopped there. I didn't.
+
+## Following the trail
+
+Whenever I find an authentication issue, I ask one more question: what else trusts this session?
+
+Applications usually have dozens of endpoints leaning on the same authentication mechanism. If session handling is flawed in one place, there's a good chance another feature inherited the same assumptions. So I started working through the authenticated functionality — profile management, account settings, notification preferences, administrative workflows. Nothing exciting, until one small detail caught my eye.
+
+A request that updated user preferences accepted a user identifier supplied by the client. Normally that value comes from the authenticated session — but this endpoint trusted a parameter instead. That doesn't guarantee a vulnerability, but it was worth testing.
+
+## The smaller finding
+
+I changed the identifier and replayed the request. The application accepted it without complaint. After confirming the behaviour a few times, it was clear that authenticated users could modify certain non-sensitive settings belonging to other accounts.
+
+The impact was far lower than the session issue — no account takeover, no privilege escalation, no access to sensitive data. Just unauthorized modification of a limited set of user-controlled preferences. Still a valid authorization flaw, and one that would almost certainly have been missed if I'd stopped after the session bug.
+
+## Why I kept going
+
+Vulnerabilities rarely exist in isolation. A weak authentication implementation often leads to authorization mistakes; authorization mistakes reveal assumptions about identity; identity assumptions expose more edge cases. Finding one issue should make you more curious, not less.
+
+The first finding tells you where to look. The second often tells you how the application was built.
+
+## Lessons for assessments
+
+When testing authentication systems, I work through:
+
+- Session creation
+- Session regeneration after login
+- Logout behaviour
+- Concurrent sessions
+- Password-change handling
+- Privilege transitions
+- Token expiration
+- Session binding
+
+And once I find an issue, I keep testing the functionality around it — because sometimes the most interesting vulnerability isn't the one you find first.
+
+## Final thoughts
+
+The session-management issue was the primary finding and carried the greater impact; the authorization flaw was comparatively minor. But both came from the same mindset: don't stop at the first bug.
+
+Understand the workflow. Map the states. Follow the trust boundaries. And when something feels slightly off, keep pulling on the thread — you never know what else is attached to it.

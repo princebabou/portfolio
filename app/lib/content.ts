@@ -88,7 +88,7 @@ export const projects: Project[] = [
 // for loading/rendering. This just holds the section's framing copy + Medium link.
 export const writing = {
   blurb: "Notes and writeups on offensive security, tooling, and things I break.",
-  profile: "https://medium.com/@manziprince", // TODO: confirm Medium handle
+  profile: "https://medium.com/@baboumanzi69",
 };
 
 export type SkillGroup = { area: string; items: string[] };
@@ -158,6 +158,5 @@ export const contact = {
   links: [
     { label: "GitHub", href: "https://github.com/princebabou" },
     { label: "LinkedIn", href: "https://www.linkedin.com/in/manzi-babou-1b661b294/" },
-    { label: "X", href: "https://x.com/manzi_prince00" },
   ],
 };
