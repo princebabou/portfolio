@@ -1,0 +1,147 @@
+---
+title: "How I Recon a Target, Part One: Drawing the Map"
+summary: "The unglamorous half of hacking — finding every door, window, and forgotten side entrance before I try to break in. Plus all the tools I actually run."
+author: "Babou"
+date: "2026-06-22"
+tags: [recon, pentesting, methodology, enumeration, bug-bounty]
+---
+
+Babou here — penetration tester out of Kigali, professional knocker-on-doors.
+
+There's a thing new testers do that I did too: you get a target, your heart rate goes up, and you immediately want to throw a SQL injection payload at the first input box you see. I get it. Payloads are fun. But here's the unsexy truth I've made peace with: **most of a hack is just looking around.** Recon is the 80%. The actual "breaking in" is the 20% that gets the screenshots.
+
+So before I send a single rude character to anyone's server, I spend a depressing amount of time just figuring out how big the building is, how many doors it has, and which window someone left open in 2019 and forgot about. This is part one of how I do that — the *map-making* phase, where everything I run is basically polite. Part two is where we start poking things and the payloads come out to play.
+
+Quick disclaimer before the fun: everything here is for **authorized testing** — engagements, bug bounty programs that invite you, your own lab. Running this against random targets isn't "recon," it's a crime with extra steps. Don't be that guy.
+
+Right. Let's draw the map.
+
+## Subdomain enumeration
+
+The target tells you about `www.target.com`. The target does *not* tell you about `staging-old.target.com` where the auth is held together with hope. Your job is to find everything the company forgot it owns.
+
+```bash
+subfinder -d target.com
+assetfinder --subs-only target.com | tee -a assets.txt
+crtsh -d target.com | tee -a crtsh.txt
+findomain -t target.com
+github-subdomains -d target.com
+```
+
+I run a few of these because they all disagree with each other, and the union is what you want. `crtsh` pulls from certificate transparency logs — turns out you can't get an SSL cert without quietly announcing the hostname to the entire internet, which is hilarious and useful. `github-subdomains` is the sleeper hit: developers leak internal hostnames in public repos constantly.
+
+Dump them all together, sort, dedupe, and now you have a list of doors instead of a door.
+
+## Port scanning and service enumeration
+
+You've got hosts. What's actually listening on them?
+
+```bash
+nmap -p- --open -sV -sC -T4 -oN nmap_results.txt target.com
+masscan -p1-65535 --rate 10000 -oL masscan_results.txt <target-ip>
+```
+
+`masscan` is the one that goes brrrr — it'll sweep all 65,535 ports stupidly fast, but it's loud and rude, so mind the `--rate` unless you enjoy being rate-limited into oblivion. `nmap` is the careful one: `-sV` fingerprints the service versions, `-sC` runs the default scripts, and `-p-` means *all* the ports, because the interesting stuff is never on 80. It's on 8443. It's always on 8443.
+
+## The part everyone skips: actually looking
+
+Here's where I put the tools down for a minute. Open the subdomains in a browser. Look at the ports, the services, the weird response on that one host. Read the page source. Hover over things.
+
+I'm serious. Automation finds the haystack; *you* find the needle. Half my best findings started as "huh, that's a weird response" — a thought no scanner has ever had. Tools don't get a gut feeling. You do. Use it.
+
+## Directory and content brute forcing
+
+The site has pages it didn't link from the homepage. `/admin`, `/backup`, `/.env`, `/old`, `/test.php` that someone swore they deleted. We go find them.
+
+```bash
+ffuf -u https://target.com/FUZZ -w common.txt -o results.txt
+gobuster dir -u https://target.com -w common.txt -o results.txt
+feroxbuster -u https://target.com -w common.txt -t 20 -x php,html -o results.txt
+```
+
+`ffuf` is my daily driver — fast, and `FUZZ` goes wherever you want it. `feroxbuster` recurses automatically, so it'll burrow into every directory it finds (the `-x php,html` tells it which extensions to append). And `dirsearch` / the classic `dirbuster` GUI are around if you like a graphical experience for some reason. Your wordlist matters more than your tool here — a good list is the difference between finding `/admin` and finding nothing.
+
+## JavaScript analysis
+
+Modern apps ship their whole brain to the browser in JS files, and developers tuck *fascinating* things in there:
+
+- API keys (left in "temporarily," circa never)
+- secret endpoints the UI never calls
+- auth tokens
+- hidden parameters
+
+```bash
+python3 linkfinder.py -i https://target.com/main.js -o results.html
+```
+
+`linkfinder` rips endpoints and paths straight out of the JavaScript. There are browser extensions that do live JS analysis too. Reading a minified JS bundle by hand is a special kind of pain, but it's also where the "wait, this endpoint isn't supposed to exist" moments live.
+
+## Content discovery: digging through the past
+
+The internet doesn't forget, and that's a gift.
+
+```bash
+waybackurls target.com | tee wayback.txt
+```
+
+The Wayback Machine has been quietly archiving URLs for years — old endpoints, dead parameters, files that "don't exist anymore" but very much still respond. Pulling historical URLs regularly surfaces stuff that's invisible in the current site. Free intel from the past. Thanks, Archive.org.
+
+## API recon
+
+If the app has an API (it does), it has its own attack surface that the website never reveals.
+
+```bash
+kiterunner -u https://target.com -w apis.txt
+```
+
+`kiterunner` brute-forces API routes specifically — it understands how APIs are shaped, which dumb directory busting doesn't. And honestly, **Postman** is underrated for just *talking* to the API by hand, learning how it expects to be addressed, and finding the endpoints that lie about what they need.
+
+## CMS and tech fingerprinting
+
+Is it WordPress? Joomla? Drupal? Because if so, half the work is figuring out which plugin from 2018 they never updated.
+
+```bash
+python3 cmseek.py -u target.com
+```
+
+Knowing the CMS means knowing the known-vuln playbook for that CMS. It's like learning the building was made by a contractor famous for forgetting to lock the back door.
+
+## WAF detection
+
+Before you start throwing payloads in part two, it's polite to know if there's a bouncer.
+
+```bash
+wafw00f https://target.com
+```
+
+`wafw00f` tells you if there's a Web Application Firewall in front of the app, and often *which* one. The **Wappalyzer** extension fingerprints the rest of the stack while you browse. Knowing the WAF early saves you from confusion later when your perfectly good payload mysteriously vanishes into the void.
+
+## Cloud storage
+
+Companies love dumping things in S3 buckets and setting the permissions to "surely no one will guess this."
+
+```bash
+python3 AWSBucketDump.py -l target-buckets.txt -D
+```
+
+Misconfigured buckets are a gift that keeps giving — backups, source code, customer data, the occasional entire database export sitting in the open. Always worth a look.
+
+## Information disclosure
+
+Last stop on the map: the stuff the server is leaking without realizing it. Source code, credentials, API keys, internal config — and the eternal classic, an exposed `.git` directory:
+
+```bash
+python3 GitDumper.py https://target.com/.git/ output/
+```
+
+If `/.git/` is reachable, you can often reconstruct the *entire source tree*, commit history and all — including that one commit where someone added a password and the next commit where they "removed" it (narrator: it's still in the history). Exposed Swagger docs are another freebie: a polite, complete menu of every endpoint and parameter the API has. Lovely of them.
+
+## That's the map
+
+And here's the thing — I still haven't *attacked* anything. Every command above is reconnaissance. I've just turned "a domain" into a detailed floor plan: the subdomains, the ports, the hidden directories, the API routes, the tech stack, the bouncer at the door, and a few windows that look suspiciously unlatched.
+
+That's the whole point. By the time I start testing for actual vulnerabilities, I'm not guessing — I know exactly where to push. The boring part is what makes the fun part work.
+
+**Part two is the fun part.** That's where we do parameter discovery and then start the injection party properly — XSS, SQLi, SSRF, file inclusion, the lot. Bring payloads.
+
+[Part two → coming soon](/writing/recon-methodology-part-2)

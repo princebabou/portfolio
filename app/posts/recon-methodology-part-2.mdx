@@ -1,0 +1,98 @@
+---
+title: "How I Recon a Target, Part Two: Now We Poke It"
+summary: "The map is drawn — time to find the parameters and start the injection party. XSS, SQLi, SSRF, file inclusion, open redirects, and the tools I reach for."
+author: "Babou"
+date: "2026-06-29"
+tags: [recon, pentesting, methodology, web-security, bug-bounty]
+---
+
+Babou again. If you read [part one](/writing/recon-methodology-part-1), you'll know I spent the whole thing being suspiciously well-behaved — mapping subdomains, ports, directories, APIs, the works, without sending anything rude to anyone. Drawing the floor plan.
+
+Floor plan's done. Bouncer's been identified. We know where the doors are.
+
+Now we find out which ones are unlocked.
+
+Same disclaimer as last time, and I mean it: **authorized testing only.** Engagements, invited bug bounty scope, your own lab. The stuff below sends actual attack payloads. Aim it at someone who didn't say yes and the only methodology you'll be practicing is "explaining yourself to a judge."
+
+Let's go.
+
+## Parameter discovery: finding the inputs
+
+You can't inject into a parameter you don't know exists. The visible form fields are the tip of the iceberg — apps accept piles of parameters they never advertise.
+
+```bash
+python3 paramspider.py -d target.com -o params.txt
+arjun -u https://target.com/api -m GET -o params.json
+```
+
+`paramspider` mines parameters from across the target's URLs; `arjun` brute-forces hidden ones by watching how the response changes when it guesses right. Every parameter you uncover here is a potential entry point for everything below. This is the bridge from "looking" to "poking" — find the inputs, then go ruin their day.
+
+What am I hunting for once I have them? Mostly the usual suspects: SQL injection, IDOR, open redirects, and anything that reflects my input back at me.
+
+## Cross-site scripting (XSS)
+
+The classic. Can I get the app to run *my* JavaScript in someone else's browser? If a parameter reflects back unsanitized, the answer is often a delightful yes.
+
+```bash
+cat params.txt | dalfox pipe -o xss.txt
+python3 xsstrike.py -u "https://target.com/index.php?search=query"
+```
+
+`dalfox` is fantastic for piping a whole list of parameters in and letting it hammer each one. `xsstrike` is more surgical — it's smart about context and WAF evasion, which matters when there's a bouncer (you did check for the bouncer in part one, right?). The dream is still the humble `<script>alert(1)</script>` popping up where it absolutely shouldn't. Never gets old.
+
+## SQL injection
+
+Can I talk to the database directly through an input that was very much not meant for that? If so, the whole database is on the table.
+
+```bash
+sqlmap -u "https://target.com/index.php?id=1" --dbs --batch --random-agent
+```
+
+`sqlmap` is the heavyweight. `--dbs` asks it to enumerate the databases, `--batch` says "stop asking me questions and just go," and `--random-agent` rotates the user-agent so you blend in a little. A word of caution though: sqlmap is *powerful*, and powerful means it can be destructive if you let it run wild on a live target. Know what your flags do. Read the output. Don't `--dump` an entire production database because you got excited.
+
+## Server-side request forgery (SSRF)
+
+This is when I trick the *server* into making requests on my behalf — to internal services it can reach but I can't, like cloud metadata endpoints holding the keys to the kingdom.
+
+```bash
+interactsh-client -v
+python3 gopherus.py
+```
+
+`interactsh` is how you *prove* SSRF: you give the app a URL pointing at your interactsh listener, and if your server gets a ping, congratulations — the target reached out and touched you. That callback is the receipt. `gopherus` crafts gopher-protocol payloads to turn a basic SSRF into something that can actually talk to internal services (Redis, databases, etc.). SSRF is one of those bugs that looks boring until it suddenly owns the entire internal network.
+
+## Local and remote file inclusion (LFI/RFI)
+
+Can I make the app include a file it shouldn't? Like, say, `/etc/passwd`, the "hello world" of file inclusion.
+
+```bash
+python3 lfisuite.py -u "https://target.com/index.php?file=../../../etc/passwd"
+fimap -u "https://target.com/index.php?file=test"
+```
+
+The `../../../` is the universal "let me out of this directory" knock. `lfisuite` and `fimap` automate the path-traversal dance and, in the good cases, escalate a file read into actual code execution. Any parameter that smells like it's loading a file — `file=`, `page=`, `include=`, `template=` — gets this treatment.
+
+## Open redirect detection
+
+Smaller bug, still worth it — especially as a stepping stone. Can I make the site redirect users to *my* URL? Great for phishing, and a frequent sidekick in SSRF and OAuth-token-theft chains.
+
+```bash
+python3 oralyzer.py -l urls.txt -p payloads.txt
+```
+
+`oralyzer` takes your list of URLs (the `redirect=`, `next=`, `url=` parameters you collected) and a payload list, and checks which ones happily forward users somewhere they shouldn't go. On its own it's minor. As part of a chain, it punches well above its weight.
+
+## Putting it together
+
+Here's the rhythm of the whole two-part thing, start to finish:
+
+1. **Map everything** (part one) — subdomains, ports, directories, JS, APIs, tech stack, leaks. No payloads, just looking.
+2. **Find the inputs** — parameter discovery turns the map into a list of things to test.
+3. **Test methodically** — XSS, SQLi, SSRF, file inclusion, open redirect, against every parameter that earned a look.
+4. **Chain it** — the small bugs combine. An open redirect plus an SSRF plus a leaked key is a much worse day for the target than any one of them alone.
+
+The biggest thing I've learned is that the magic isn't in any single tool — it's in the order and the patience. Recon makes the attack obvious; the attack just confirms what good recon already suspected. Anybody can run `sqlmap`. The findings come from knowing *where* to run it, and that knowing is built in part one.
+
+Now go forth and poke things. Responsibly. With permission. You know the drill.
+
+— Babou

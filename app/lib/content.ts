@@ -157,6 +157,6 @@ export const contact = {
   email: "baboumanzi69@gmail.com",
   links: [
     { label: "GitHub", href: "https://github.com/princebabou" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/in/manzi-babou-1b661b294/" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/manzi-prince-babou-1b661b294/" },
   ],
 };
